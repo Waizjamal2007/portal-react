@@ -188,7 +188,7 @@ function StudentAcademics({ onLogout }) {
                     </tr>
                   ))
                 ) : (
-                  <tr><td colSpan="7" style={{ textAlign: 'center', color: '#64748b', padding: '20px' }}>📝 No assignments assigned yet. Jab admin upload karega tabhi yahan dikhenge!</td></tr>
+                  <tr><td colSpan="7" style={{ textAlign: 'center', color: '#64748b', padding: '20px' }}>📝 No assignments assigned yet.</td></tr>
                 )}
               </tbody>
             </table>
