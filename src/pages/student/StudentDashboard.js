@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-// URL ko fix aur direct kar diya taake API fail na ho
+// API URL ko direct kar diya taake environment variables ka masla na aaye
 const API_URL = 'https://portal-node-mauve.vercel.app/api';
 
 function StudentDashboard({ user, onLogout }) {
@@ -33,10 +33,13 @@ function StudentDashboard({ user, onLogout }) {
         axios.get(`${API_URL}/student/jobs`)
       ]);
       
-      setStudentDetails(detailsRes.data.student);
+      // Console mein response check karne ke liye (F12 daba kar inspect kar sakte ho)
+      console.log("Backend Details Data:", detailsRes.data);
+      
+      // Agar backend direct student object bhej raha hai ya '.student' ke andar, dono handle ho gaye
+      setStudentDetails(detailsRes.data.student || detailsRes.data);
       setStudentOfMonth(detailsRes.data.studentOfMonth);
       setAssignments(assignmentsRes.data || []);
-      // Agar progress array khali ho toh crash na kare
       setProgress(progressRes.data && progressRes.data.length > 0 ? progressRes.data[0] : null);
       setJobs(jobsRes.data || []);
     } catch (error) {
@@ -111,12 +114,12 @@ function StudentDashboard({ user, onLogout }) {
             <h3 className="card-title">Your Details</h3>
             <table className="data-table">
               <tbody>
-                <tr><th>Student Name</th><td>{studentDetails?.name}</td></tr>
-                <tr><th>Enrollment No</th><td>{studentDetails?.enrollmentNo}</td></tr>
-                <tr><th>Email</th><td>{studentDetails?.email}</td></tr>
-                <tr><th>Phone</th><td>{studentDetails?.phone}</td></tr>
-                <tr><th>Faculty</th><td>{studentDetails?.faculty}</td></tr>
-                <tr><th>Current Semester</th><td>{studentDetails?.currentSemester}</td></tr>
+                <tr><th>Student Name</th><td>{studentDetails?.name || 'N/A'}</td></tr>
+                <tr><th>Enrollment No</th><td>{studentDetails?.enrollmentNo || 'N/A'}</td></tr>
+                <tr><th>Email</th><td>{studentDetails?.email || 'N/A'}</td></tr>
+                <tr><th>Phone</th><td>{studentDetails?.phone || 'N/A'}</td></tr>
+                <tr><th>Faculty</th><td>{studentDetails?.faculty || 'N/A'}</td></tr>
+                <tr><th>Current Semester</th><td>{studentDetails?.currentSemester || 'N/A'}</td></tr>
               </tbody>
             </table>
           </div>
