@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const API_URL = process.env.REACT_APP_API_URL || 'https://portal-node-mauve.vercel.app/api';
+const API_URL = process.env.REACT_APP_API_URL || 'https://portal-node-mauve.vercel.app/api/student/login';
 
 function StudentLogin({ onLogin }) {
   const [studentId, setStudentId] = useState('');
