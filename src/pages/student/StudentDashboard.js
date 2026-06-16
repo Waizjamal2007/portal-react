@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'https://portal-node-mauve.vercel.app/api';
+// URL ko fix aur direct kar diya taake API fail na ho
+const API_URL = 'https://portal-node-mauve.vercel.app/api';
 
 function StudentDashboard({ user, onLogout }) {
   const [studentDetails, setStudentDetails] = useState(null);
@@ -34,9 +35,10 @@ function StudentDashboard({ user, onLogout }) {
       
       setStudentDetails(detailsRes.data.student);
       setStudentOfMonth(detailsRes.data.studentOfMonth);
-      setAssignments(assignmentsRes.data);
-      setProgress(progressRes.data[0]);
-      setJobs(jobsRes.data);
+      setAssignments(assignmentsRes.data || []);
+      // Agar progress array khali ho toh crash na kare
+      setProgress(progressRes.data && progressRes.data.length > 0 ? progressRes.data[0] : null);
+      setJobs(jobsRes.data || []);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -99,8 +101,8 @@ function StudentDashboard({ user, onLogout }) {
 
         {studentOfMonth && (
           <div className="som-banner">
-            <h3>🏆 Student of the Month: {studentOfMonth.name}</h3>
-            <div className="som-badge">ID: {studentOfMonth.batch}</div>
+            <h3>🏆 Student of the Month: {studentOfMonth?.name}</h3>
+            <div className="som-badge">ID: {studentOfMonth?.batch}</div>
           </div>
         )}
 
@@ -119,23 +121,28 @@ function StudentDashboard({ user, onLogout }) {
             </table>
           </div>
 
-          {progress && (
+          {progress ? (
             <div className="card">
               <h3 className="card-title">Overall Progress</h3>
               <div className="progress-section">
-                <div className="progress-label"><span>Attendance</span><span>{progress.percentage}%</span></div>
+                <div className="progress-label"><span>Attendance</span><span>{progress?.percentage}%</span></div>
                 <div className="progress-bar-container">
-                  <div className="progress-bar-fill" style={{ width: `${progress.percentage}%` }}>{progress.percentage}%</div>
+                  <div className="progress-bar-fill" style={{ width: `${progress?.percentage || 0}%` }}>{progress?.percentage || 0}%</div>
                 </div>
               </div>
               <table className="data-table">
                 <tbody>
-                  <tr><th>Assignment Marks</th><td>{progress.assignmentMarks}%</td></tr>
-                  <tr><th>Quiz Marks</th><td>{progress.quizMarks}%</td></tr>
-                  <tr><th>Attendance</th><td>{progress.classesAttended}/{progress.classesHeld}</td></tr>
-                  <tr><th>Month</th><td>{progress.month}</td></tr>
+                  <tr><th>Assignment Marks</th><td>{progress?.assignmentMarks}%</td></tr>
+                  <tr><th>Quiz Marks</th><td>{progress?.quizMarks}%</td></tr>
+                  <tr><th>Attendance</th><td>{progress?.classesAttended}/{progress?.classesHeld}</td></tr>
+                  <tr><th>Month</th><td>{progress?.month}</td></tr>
                 </tbody>
               </table>
+            </div>
+          ) : (
+            <div className="card">
+              <h3 className="card-title">Overall Progress</h3>
+              <p style={{ padding: '20px', color: '#64748b' }}>No progress data available yet.</p>
             </div>
           )}
         </div>
@@ -146,13 +153,17 @@ function StudentDashboard({ user, onLogout }) {
             <table className="data-table">
               <thead><tr><th>Assignment</th><th>Deadline</th><th>Status</th></tr></thead>
               <tbody>
-                {assignments.slice(0, 5).map(assign => (
-                  <tr key={assign._id}>
-                    <td>{assign.assignmentName}</td>
-                    <td>{assign.deadline}</td>
-                    <td className={assign.status === 'Submitted' ? 'status-submitted' : 'status-missed'}>{assign.status}</td>
-                  </tr>
-                ))}
+                {assignments.length > 0 ? (
+                  assignments.slice(0, 5).map(assign => (
+                    <tr key={assign._id}>
+                      <td>{assign.assignmentName}</td>
+                      <td>{assign.deadline}</td>
+                      <td className={assign.status === 'Submitted' ? 'status-submitted' : 'status-missed'}>{assign.status}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr><td colSpan="3" style={{ textAlign: 'center', color: '#64748b' }}>No assignments assigned.</td></tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -164,14 +175,18 @@ function StudentDashboard({ user, onLogout }) {
             <table className="data-table">
               <thead><tr><th>Position</th><th>Company</th><th>Location</th><th>Apply Before</th></tr></thead>
               <tbody>
-                {jobs.map(job => (
-                  <tr key={job._id}>
-                    <td>{job.title}</td>
-                    <td>{job.company}</td>
-                    <td>{job.location}</td>
-                    <td>{job.applyBefore}</td>
-                  </tr>
-                ))}
+                {jobs.length > 0 ? (
+                  jobs.map(job => (
+                    <tr key={job._id}>
+                      <td>{job.title}</td>
+                      <td>{job.company}</td>
+                      <td>{job.location}</td>
+                      <td>{job.applyBefore}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr><td colSpan="4" style={{ textAlign: 'center', color: '#64748b' }}>No current job opportunities.</td></tr>
+                )}
               </tbody>
             </table>
           </div>
