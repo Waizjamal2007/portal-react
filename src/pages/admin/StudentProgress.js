@@ -1,20 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'react-router-dom';
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'https://portal-node-mauve.vercel.app/api';
+// API URL ko direct production server par set kar diya
+const API_URL = 'https://portal-node-mauve.vercel.app/api';
 
 function StudentProgress({ onLogout }) {
   const [progress, setProgress] = useState([]);
   const [students, setStudents] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({ studentId: '', month: '', year: 2025, assignmentMarks: 0, quizMarks: 0, classesAttended: 0, classesHeld: 0, remarks: '' });
+  const [formData, setFormData] = useState({ studentId: '', month: '', year: 2026, assignmentMarks: 0, quizMarks: 0, classesAttended: 0, classesHeld: 0, remarks: '' });
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchData = async () => {
@@ -23,10 +26,10 @@ function StudentProgress({ onLogout }) {
         axios.get(`${API_URL}/admin/progress`, { headers: { Authorization: `Bearer ${token}` } }),
         axios.get(`${API_URL}/admin/students`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
-      setProgress(progressRes.data);
-      setStudents(studentsRes.data);
+      setProgress(progressRes.data || []);
+      setStudents(studentsRes.data || []);
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error fetching admin progress data:', error);
     }
   };
 
@@ -37,7 +40,7 @@ function StudentProgress({ onLogout }) {
       setMessage('Progress added successfully');
       fetchData();
       setShowModal(false);
-      setFormData({ studentId: '', month: '', year: 2025, assignmentMarks: 0, quizMarks: 0, classesAttended: 0, classesHeld: 0, remarks: '' });
+      setFormData({ studentId: '', month: '', year: 2026, assignmentMarks: 0, quizMarks: 0, classesAttended: 0, classesHeld: 0, remarks: '' });
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       setMessage(error.response?.data?.message || 'Error adding progress');
@@ -83,17 +86,21 @@ function StudentProgress({ onLogout }) {
                 <tr><th>Student</th><th>Month</th><th>Assignment Marks</th><th>Quiz Marks</th><th>Attendance</th><th>Percentage</th><th>Remarks</th></tr>
               </thead>
               <tbody>
-                {progress.map(p => (
-                  <tr key={p._id}>
-                    <td>{p.studentName}</td>
-                    <td>{p.month} {p.year}</td>
-                    <td>{p.assignmentMarks}%</td>
-                    <td>{p.quizMarks}%</td>
-                    <td>{p.classesAttended}/{p.classesHeld}</td>
-                    <td><div className="progress-bar-container" style={{ width: '100px', height: '20px' }}><div className="progress-bar-fill" style={{ width: `${p.percentage}%`, height: '20px', fontSize: '10px' }}>{p.percentage}%</div></div></td>
-                    <td>{p.remarks}</td>
-                  </tr>
-                ))}
+                {progress.length > 0 ? (
+                  progress.map(p => (
+                    <tr key={p._id}>
+                      <td>{p.studentName}</td>
+                      <td>{p.month} {p.year}</td>
+                      <td>{p.assignmentMarks}%</td>
+                      <td>{p.quizMarks}%</td>
+                      <td>{p.classesAttended}/{p.classesHeld}</td>
+                      <td><div className="progress-bar-container" style={{ width: '100px', height: '20px' }}><div className="progress-bar-fill" style={{ width: `${p.percentage}%`, height: '20px', fontSize: '10px' }}>{p.percentage}%</div></div></td>
+                      <td>{p.remarks}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr><td colSpan="7" style={{ textAlign: 'center', color: '#64748b', padding: '20px' }}>📋 No progress data records found.</td></tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -105,7 +112,15 @@ function StudentProgress({ onLogout }) {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h3>Add Student Progress</h3>
             <form onSubmit={handleAddProgress}>
-              <div className="form-group"><label>Student</label><select value={formData.studentId} onChange={(e) => setFormData({...formData, studentId: e.target.value})} required><option value="">Select Student</option>{students.map(s => <option key={s._id} value={s.studentId}>{s.name} ({s.studentId})</option>)}</select></div>
+              <div className="form-group">
+                <label>Student</label>
+                <select value={formData.studentId} onChange={(e) => setFormData({...formData, studentId: e.target.value})} required>
+                  <option value="">Select Student</option>
+                  {students.length > 0 && students.map(s => (
+                    <option key={s._id} value={s.studentId}>{s.name} ({s.studentId})</option>
+                  ))}
+                </select>
+              </div>
               <div className="form-group"><label>Month</label><input type="text" value={formData.month} onChange={(e) => setFormData({...formData, month: e.target.value})} placeholder="e.g., June" required /></div>
               <div className="form-group"><label>Year</label><input type="number" value={formData.year} onChange={(e) => setFormData({...formData, year: e.target.value})} required /></div>
               <div className="form-group"><label>Assignment Marks (%)</label><input type="number" value={formData.assignmentMarks} onChange={(e) => setFormData({...formData, assignmentMarks: e.target.value})} required /></div>
