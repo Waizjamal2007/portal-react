@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const API_URL = process.env.REACT_APP_API_URL || 'https://portal-node-mauve.vercel.app/api/student/login';
+// Base URL ko sahi kar diya, ab end points sahi hit honge
+const API_URL = 'https://portal-node-mauve.vercel.app/api';
 
 function StudentLogin({ onLogin }) {
   const [studentId, setStudentId] = useState('');
@@ -17,6 +18,7 @@ function StudentLogin({ onLogin }) {
     setLoading(true);
     
     try {
+      // URL sahi hit hoga: https://portal-node-mauve.vercel.app/api/student/login
       const response = await axios.post(`${API_URL}/student/login`, { studentId, password });
       onLogin(response.data.token, response.data.user);
       navigate('/student/dashboard');
@@ -56,7 +58,7 @@ function StudentLogin({ onLogin }) {
         </div>
         
         <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '12px', color: '#94a3b8' }}>
-          Demo: STUDENT160 / STUDENT160
+          Demo: STUDENT1 / 123456
         </div>
       </div>
     </div>
